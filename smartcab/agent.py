@@ -43,19 +43,20 @@ class LearningAgent(Agent):
 		# Gather inputs
 		self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
 		inputs = self.env.sense(self)
+		inputs['next_waypoint'] = self.next_waypoint
 		deadline = self.env.get_deadline(self)
 
 		# TODO: Update state
 		self.state = inputs
-		self.state['next_waypoint'] = self.next_waypoint
 		self.state = tuple(self.state.items())
-		self.epsilon = self.decayRate(self.time_step) # decay epsilon as time goes on there is less randomness
-
 		# TODO: Select action according to your policy
 
 		action = None # default action
-	
+	 
+		self.epsilon = self.decayRate(self.time_step) # decay epsilon as time goes on there is less randomness
+		
 		# occasionally take a random action instaed of best Q, the chance of this decreases as epsilon gets smaller
+		# from the decay function above
 		if random.random() < self.epsilon: # rand value from [0,1] to compare against epsilon (also from [0,1])
 			action = random.choice(self.all_actions)
 			best_Q = self.setqValue(self.state, action)
