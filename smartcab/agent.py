@@ -48,24 +48,26 @@ class LearningAgent(Agent):
 		# TODO: Update state
 		self.state = inputs
 		self.state['next_waypoint'] = self.next_waypoint
-		self.state = tuple(sorted(self.state.items()))
+		self.state = tuple(self.state.items())
 		self.epsilon = self.decayRate(self.time_step) # decay epsilon as time goes on there is less randomness
 
 		# TODO: Select action according to your policy
 
-		action = None
+		action = None # default action
 	
-		if random.random() < self.epsilon: 
+		# occasionally take a random action instaed of best Q, the chance of this decreases as epsilon gets smaller
+		if random.random() < self.epsilon: # rand value from [0,1] to compare against epsilon (also from [0,1])
 			action = random.choice(self.all_actions)
 			best_Q = self.setqValue(self.state, action)
 		else:   
 			# find state, action pair that returns highest q-value
+			# NOTE: not necessary to gather all states
 			best_Q = -1000.0
 			for a in self.all_actions:
 		
 				Q = self.setqValue(self.state, a)
 
-				if Q > best_Q: # init best q
+				if Q > best_Q: #
 					best_Q = Q
 					action = a
 
@@ -74,7 +76,9 @@ class LearningAgent(Agent):
 		self.time_step += 1.0
 
 		# TODO: Learn policy based on state, action, reward
-		if self.prev_state != None:
+
+
+		if self.prev_state != None: # make sure at least 1 time step is completed b/c need prev state (current) and along with next state
 			self.setqValue(self.prev_state, self.prev_action)
 			utility = self.prev_reward + (self.gamma * best_Q)
 			old_pair = (self.prev_state, self.prev_action)
@@ -88,7 +92,7 @@ class LearningAgent(Agent):
 		self.prev_action = action
 		self.prev_reward = reward
 
-		# calculate success rate
+		# calculate success rate, credit forum user @ronrest
 		location = self.env.agent_states[self]["location"] 
 		destination = self.env.agent_states[self]["destination"]
 		if location == destination:
@@ -101,16 +105,17 @@ class LearningAgent(Agent):
 
 		print "Success Rate: {}%".format(success_rate)
 
+	def decayRate(self, time_step): 
+		return 1.0 / float(time_step)
 
 	def setqValue(self, state, action):
 
 		if (state, action) not in self.Q_table:
-			self.Q_table[(state,action)] = 1.0
+			self.Q_table[(state,action)] = 1.0 #initialize first visit S,A pair q values to 1
 		return self.Q_table[(state,action)]
 
 
-	def decayRate(self, time_step): 
-		return 1.0 / float(time_step)
+
 
 
 
