@@ -16,12 +16,14 @@ class LearningAgent(Agent):
 		self.prev_reward = None
 		self.prev_action = None
 		self.prev_state = None
-		self.epsilon = 0.5
 		self.alpha = 0.7
 		self.gamma = 0.1
+		self.epsilon = 0.5
 		self.time_step = 1.0
 		self.successes = []
 		self.Q_table = {}
+		self.penalty = 0
+		self.num_steps = 0
 
 
 
@@ -31,10 +33,9 @@ class LearningAgent(Agent):
 		self.prev_state = None
 		self.prev_action = None
 		self.prev_reward = None
-		self.epsilon = 0.5
+		self.time_step = 1.0
 		self.alpha = 0.7
 		self.gamma = 0.1
-		self.time_step = 1.0
 		self.successes.append(0)
 
 
@@ -92,6 +93,12 @@ class LearningAgent(Agent):
 		self.prev_state = self.state
 		self.prev_action = action
 		self.prev_reward = reward
+		self.num_steps += 1
+
+
+		if reward < 0: #Assign penalty if reward is negative
+ 			self.penalty += 1
+  			print "Negative reward: inputs = {}, action = {}, reward = {}, waypoint {}".format(inputs, action, reward, self.next_waypoint)
 
 		# calculate success rate, credit forum user @ronrest
 		location = self.env.agent_states[self]["location"] 
@@ -103,8 +110,10 @@ class LearningAgent(Agent):
 		num_success = self.successes.count(1)
 		
 		success_rate = (float(num_success)/float(len(self.successes)))*100
+		penalty_rate = (float(self.penalty)/self.num_steps)*100
 
 		print "Success Rate: {}%".format(success_rate)
+		print "Penalty Rate: {}%".format(penalty_rate)
 
 	def decayRate(self, time_step): 
 		return 1.0 / float(time_step)
@@ -132,7 +141,6 @@ def run():
 	# Now simulate it
 	sim = Simulator(e, update_delay=0.00001, display=False)  # create simulator (uses pygame when display=True, if available)
 	# NOTE: To speed up simulation, reduce update_delay and/or set display=False
-
 	sim.run(n_trials=100)  # run for a specified number of trials
 	# NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
 
